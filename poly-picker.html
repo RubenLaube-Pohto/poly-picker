@@ -4,33 +4,250 @@
     <template>
         <style>
             :host {
-                display: block;
+                display: inline-block;
+            }
+            .date-picker-container {
+                border: 1px solid #CCC;
+            }
+            .date-selector-container {
+                display: flex;
+                justify-content: space-between;
+                margin: 16px;
+            }
+            .date-selector-button {
+                background: transparent;
+                border: none;
+                font-size: 1.2em;
+                outline: none;
+            }
+            .day-numbers-container {
+                width: 280px;
+                height: 280px;
+                margin: 16px;
+            }
+            .day-number-box {
+                position: relative;
+                width: 40px;
+                height: 40px;
+                float: left;
+            }
+            .day-number {
+                position: absolute;
+                width: 30px;
+                height: 30px;
+
+                text-align: center;
+                line-height: 30px;
+
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+            }
+            .day-number-selected {
+                background-color: powderblue;
+                border-radius: 50%;
             }
         </style>
-        <h2>Hello [[prop1]]!</h2>
+
+        <div class="date-picker-container">
+
+            <div class="date-selector-container">
+                <button class="date-selector-button" on-click="prevMonth"><</button>
+                <p>[[monthYear]]</p>
+                <button class="date-selector-button" on-click="nextMonth">></button>
+            </div>
+
+            <div class="day-numbers-container">
+
+                <!-- Week days -->
+                <template is="dom-repeat" items="[[weekDays]]">
+                    <div class="day-number-box">
+                        <div class="day-number">[[item]]</div>
+                    </div>
+                </template>
+
+                <!-- Day numbers -->
+                <template is="dom-repeat" items="[[days]]">
+                    <div class="day-number-box">
+                        <template is="dom-if" if="[[item]]">
+                            <div class$="day-number [[highlightSelected(item)]]"
+                                on-click="select"
+                            >[[item]]</div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+
+        </div>
+
     </template>
 
     <script>
-    /**
-    * `poly-picker`
-    * Date picker built with Polymer
-    *
-    * @customElement
-    * @polymer
-    * @demo demo/index.html
-    */
-    class PolyPicker extends Polymer.Element {
-        static get is() { return 'poly-picker'; }
-        static get properties() {
-            return {
-                prop1: {
-                    type: String,
-                    value: 'poly-picker'
-                }
-            };
-        }
-    }
+        /**
+        * `poly-picker`
+        * Date picker built with Polymer
+        *
+        * @customElement
+        * @polymer
+        * @demo demo/index.html
+        */
+        class PolyPicker extends Polymer.Element {
 
-    window.customElements.define(PolyPicker.is, PolyPicker);
+            static get is() { return 'poly-picker'; }
+
+            static get properties() {
+                return {
+                    monthYear: {
+                        type: String,
+                        value: ''
+                    },
+                    weekDays: {
+                        type: Array,
+                        value: () => ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+                    },
+                    days: {
+                        type: Array,
+                        value: () => []
+                    },
+                    selected: {
+                        type: Date,
+                        value: () => new Date(),
+                        notify: true,
+                    }
+                };
+            }
+
+            constructor() {
+                super();
+                this.browser = new Date();
+                this.setProps();
+                // this.selectedHighlight = this.selectedDayInView()
+            }
+
+            /**
+            * Days in a month
+            * @param {number} year Year
+            * @param {number} month Month. 1: January, 2: February ... 12: December
+            * @return {number}
+            */
+            daysInMonth(year, month) {
+                return new Date(year, month, 0).getDate();
+            }
+
+            /**
+             * Get the first weekday in a month
+             */
+            firstWeekdayInMonth(year, month) {
+                return new Date(year, month, 1).getDay();
+            }
+
+            nextMonth() {
+                this.setMonth(1);
+            }
+
+            prevMonth() {
+                this.setMonth(-1);
+            }
+
+            /**
+             * Set selected date and emit event
+             */
+            select(e) {
+                const day = e.model.item;
+                const selected = new Date(this.browser.getFullYear(), this.browser.getMonth(), day);
+                this.selected = selected;
+            }
+
+            /**
+             * Get an array of day in the current month
+             *
+             * Adds padding items in front for lining up with the correct
+             * weekdays.
+             */
+            getDayNumbers() {
+                const days = this.daysInMonth(
+                    this.browser.getFullYear(), this.browser.getMonth() + 1);
+                const firstDay = this.firstWeekdayInMonth(
+                    this.browser.getFullYear(), this.browser.getMonth());
+                const arr = [];
+
+                // US week starts from Sunday so -1
+                for (let i = 0; i < firstDay - 1; i++) {
+                    arr.push(0);
+                }
+                for (let i = 1; i <= days; i++) {
+                    arr.push(i);
+                }
+
+                return arr;
+            }
+
+            /**
+             * @param {number} day
+             */
+            highlightSelected(day) {
+                if (day === this.selected.getDate()) {
+                    return 'day-number-selected';
+
+                } else {
+                    return '';
+                }
+            }
+
+            // selectedDayInView() {
+            //     if (
+            //         this.selected.getFullYear() === this.browser.getFullYear() &&
+            //         this.selected.getMonth() === this.selected.getMonth()
+            //     ) {
+            //         return this.selected.getDate();
+
+            //     } else {
+            //         return -1;
+            //     }
+            // }
+
+            /**
+             * Get current month in human redable format
+             */
+            getMonthString() {
+                const locale = 'en-US';
+                return this.browser.toLocaleString(locale, { month: 'long' });
+            }
+
+            /**
+             * Update properties
+             */
+            setProps() {
+                this.monthYear = this.getMonthString() + ' ' + this.browser.getFullYear();
+                this.days = this.getDayNumbers();
+            }
+
+            /**
+             * Step to prev or next month
+             *
+             * Not called directly. Use nextMonth() and prevMonth().
+             */
+            setMonth(direction) {
+                let month = this.browser.getMonth() + direction;
+
+                if (month < 0) {
+                    month = 11;
+                    const year = this.browser.getFullYear() - 1;
+                    this.browser.setFullYear(year, month);
+
+                } else if (month > 11) {
+                    month = 0;
+                    const year = this.browser.getFullYear() + 1;
+                    this.browser.setFullYear(year, month);
+
+                } else {
+                    this.browser.setMonth(month);
+                }
+
+                this.setProps();
+            }
+        }
+
+        window.customElements.define(PolyPicker.is, PolyPicker);
     </script>
 </dom-module>

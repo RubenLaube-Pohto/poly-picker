@@ -16,13 +16,23 @@
       <style is="custom-style" include="demo-pages-shared-styles">
       </style>
     </custom-style>
+    <script>
+        window.onload = () => {
+            document.getElementById('date-picker')
+                .addEventListener('selected-changed', e => {
+                    const date = e.detail.value;
+                    document.getElementById('selected-date').innerHTML = date;
+                });
+        };
+    </script>
   </head>
   <body>
     <div class="vertical-section-container centered">
       <h3>Basic poly-picker demo</h3>
+      <p id="selected-date"></p>
       <demo-snippet>
         <template>
-          <poly-picker></poly-picker>
+          <poly-picker id="date-picker"></poly-picker>
         </template>
       </demo-snippet>
     </div>

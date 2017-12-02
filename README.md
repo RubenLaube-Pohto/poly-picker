@@ -2,20 +2,12 @@
 
 Date picker built with Polymer
 
-## Install the Polymer-CLI
+## Desc
 
-First, make sure you have the [Polymer CLI](https://www.npmjs.com/package/polymer-cli) installed. Then run `polymer serve` to serve your element locally.
+A small exploration project with a purpose of building a date picker with Polymer. I didn't have any prior knowledge of Polymer. Styling is done and the parent component is able to listen to date change. The selection indication with CSS is buggy as I'm not familiar with how to work with the change detection here. Maybe I'll fix it some time.
 
-## Viewing Your Element
+![demo](./demo.png)
 
-```
-$ polymer serve
-```
+## License
 
-## Running Tests
-
-```
-$ polymer test
-```
-
-Your application is already set up to be tested via [web-component-tester](https://github.com/Polymer/web-component-tester). Run `polymer test` to run your application's test suite locally.
+MIT
